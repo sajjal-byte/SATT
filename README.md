@@ -52,4 +52,5 @@ npm start
 | DELETE | /api/tasks/:id | Delete task |
 
 ---
-*Developed as part of the Software Engineering course at GCUF*
+## Live Demo
+https://satt-production.up.railway.app
