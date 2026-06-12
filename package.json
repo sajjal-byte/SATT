@@ -1,0 +1,11 @@
+{
+  "name": "satt",
+  "version": "1.0.0",
+  "description": "Student Assignment & Task Tracker – SE Project by Sajjal Farooq",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sql.js": "^1.11.0"
+  }
+}
