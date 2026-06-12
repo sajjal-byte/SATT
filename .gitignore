@@ -1,4 +1,5 @@
 node_modules/
 satt.db
 package-lock.json
+nixpacks.toml
 .env
