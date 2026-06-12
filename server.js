@@ -42,8 +42,7 @@ async function initDB() {
 
   
 
-  console.log(`📁 Database ready (${count === 0 ? 'new' : 'existing'}): satt.db`);
-}
+  console.log(`📁 Database ready: satt.db`);
 
 // Save DB to disk after every write
 function saveDB() {
