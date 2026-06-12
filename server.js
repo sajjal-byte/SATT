@@ -1,24 +1,21 @@
-const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
-const crypto  = require('crypto');
+const express   = require('express');
+const path      = require('path');
+const fs        = require('fs');
+const crypto    = require('crypto');
 const initSqlJs = require('sql.js');
 
-const app    = express();
-const PORT = process.env.PORT || 3000;
+const app     = express();
+const PORT    = process.env.PORT || 3000;
 const DB_PATH = path.join(__dirname, 'satt.db');
 
-// ── MIDDLEWARE ────────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── DATABASE INIT ─────────────────────────────────────────────────────────────
 let db;
 
 async function initDB() {
   const SQL = await initSqlJs();
 
-  // Load existing DB file or create new one
   if (fs.existsSync(DB_PATH)) {
     const fileBuffer = fs.readFileSync(DB_PATH);
     db = new SQL.Database(fileBuffer);
@@ -26,7 +23,6 @@ async function initDB() {
     db = new SQL.Database();
   }
 
-  // Create table
   db.run(`
     CREATE TABLE IF NOT EXISTS tasks (
       id        TEXT PRIMARY KEY,
@@ -40,17 +36,15 @@ async function initDB() {
     )
   `);
 
-  
+  saveDB();
+  console.log('📁 Database ready: satt.db');
+}
 
-  console.log(`📁 Database ready: satt.db`);
-
-// Save DB to disk after every write
 function saveDB() {
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
 
-// Convert sql.js query result to array of objects
 function rowsToObjects(result) {
   if (!result.length) return [];
   const { columns, values } = result[0];
@@ -60,8 +54,6 @@ function rowsToObjects(result) {
     return obj;
   });
 }
-
-// ── API ROUTES ────────────────────────────────────────────────────────────────
 
 // GET all tasks
 app.get('/api/tasks', (req, res) => {
@@ -83,7 +75,6 @@ app.post('/api/tasks', (req, res) => {
   if (!title || !subject || !due) {
     return res.status(400).json({ error: 'title, subject, and due are required' });
   }
-
   const task = {
     id:      crypto.randomUUID(),
     title:   title.trim(),
@@ -94,7 +85,6 @@ app.post('/api/tasks', (req, res) => {
     notes:   notes.trim(),
     created: Date.now()
   };
-
   db.run(
     'INSERT INTO tasks (id,title,subject,due,priority,status,notes,created) VALUES (?,?,?,?,?,?,?,?)',
     [task.id, task.title, task.subject, task.due, task.priority, task.status, task.notes, task.created]
@@ -108,18 +98,16 @@ app.put('/api/tasks/:id', (req, res) => {
   const existing = rowsToObjects(db.exec('SELECT * FROM tasks WHERE id = ?', [req.params.id]));
   if (!existing.length) return res.status(404).json({ error: 'Task not found' });
   const e = existing[0];
-
   const updated = {
-    id:      req.params.id,
-    title:   (req.body.title   ?? e.title).trim(),
-    subject: (req.body.subject ?? e.subject).trim(),
-    due:     req.body.due      ?? e.due,
-    priority:req.body.priority ?? e.priority,
-    status:  req.body.status   ?? e.status,
-    notes:   (req.body.notes   ?? e.notes ?? '').trim(),
-    created: e.created
+    id:       req.params.id,
+    title:    (req.body.title   ?? e.title).trim(),
+    subject:  (req.body.subject ?? e.subject).trim(),
+    due:      req.body.due      ?? e.due,
+    priority: req.body.priority ?? e.priority,
+    status:   req.body.status   ?? e.status,
+    notes:    (req.body.notes   ?? e.notes ?? '').trim(),
+    created:  e.created
   };
-
   db.run(
     'UPDATE tasks SET title=?,subject=?,due=?,priority=?,status=?,notes=? WHERE id=?',
     [updated.title, updated.subject, updated.due, updated.priority, updated.status, updated.notes, updated.id]
@@ -137,9 +125,8 @@ app.delete('/api/tasks/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// ── START ─────────────────────────────────────────────────────────────────────
 initDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`\n🚀 SATT is running → http://localhost:${PORT}\n`);
+    console.log(`🚀 SATT running → http://localhost:${PORT}`);
   });
 });
