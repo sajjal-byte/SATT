@@ -40,40 +40,7 @@ async function initDB() {
     )
   `);
 
-  // Seed if empty
-  const result = db.exec('SELECT COUNT(*) as n FROM tasks');
-  const count  = result[0].values[0][0];
-
-  if (count === 0) {
-    const today = new Date();
-    const addDays = (n) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() + n);
-      return d.toISOString().split('T')[0];
-    };
-
-    const seed = [
-      { title: 'COAL Assignment 2 – Array Operations',    subject: 'COAL',                due: addDays(3),  priority: 'high',   status: 'in-progress', notes: 'Chapters 4-6 Irvine' },
-      { title: 'SE Project – SRS Document',               subject: 'Software Engineering', due: addDays(7),  priority: 'high',   status: 'pending',     notes: '' },
-      { title: 'InfoSec Lab – Firewall Config',            subject: 'Information Security', due: addDays(2),  priority: 'medium', status: 'pending',     notes: '' },
-      { title: 'COAL Exam Prep – Chapter 5',              subject: 'COAL',                due: addDays(5),  priority: 'high',   status: 'pending',     notes: 'Stack ops, bitwise' },
-      { title: 'SE Quiz – UML Diagrams',                  subject: 'Software Engineering', due: addDays(-1), priority: 'medium', status: 'pending',     notes: '' },
-      { title: 'InfoSec Assignment – RSA Implementation', subject: 'Information Security', due: addDays(10), priority: 'low',    status: 'done',        notes: '' },
-      { title: 'COAL Lab – Fibonacci in MASM',            subject: 'COAL',                due: addDays(-3), priority: 'medium', status: 'done',        notes: 'Done with Irvine32' },
-      { title: 'SE Final Project Submission',             subject: 'Software Engineering', due: addDays(14), priority: 'high',   status: 'pending',     notes: 'SATT web app' },
-    ];
-
-    const stmt = db.prepare(`
-      INSERT INTO tasks (id,title,subject,due,priority,status,notes,created)
-      VALUES (?,?,?,?,?,?,?,?)
-    `);
-    for (const row of seed) {
-      stmt.run([crypto.randomUUID(), row.title, row.subject, row.due, row.priority, row.status, row.notes, Date.now()]);
-    }
-    stmt.free();
-    saveDB();
-    console.log('✅ Database seeded with sample tasks');
-  }
+  
 
   console.log(`📁 Database ready (${count === 0 ? 'new' : 'existing'}): satt.db`);
 }
